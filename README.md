@@ -19,76 +19,87 @@
 
 Current branch:
 
-* `6.5`, `6.5.0`, `latest` - Splunk Enterprise
-* `6.5-light`, `6.5.0-light`, `latest-light` - Splunk Light
-* `6.5-forwarder`, `6.5.0-forwarder`, `latest-forwarder` - Splunk Universal Forwarder
-
-For previous versions or newest releases see other branches.
+* `6.3.2`, `6.6.3`, `latest` - Splunk Light
 
 ## Introduction
 
-> NOTE: I'm working at Splunk, but this is not an official Splunk images.
-> I build them in my free time when I'm not at work. I have some knowledge
-> about Splunk, but you should think twice before putting them in
-> production. I run these images on my own home server just for
-> my personal needs. If you have any issues - feel free to open a
-> [bug](https://github.com/outcoldman/docker-splunk/issues).
+This repository is forked from <https://github.com/outcoldman/docker-splunk/issues>
 
-Dockerfiles to build [Splunk](https://splunk.com) including Enterpise, Light and Universal Forwarder.
+The focus here is only on the Splunk Light version and to keep it updated as I only use it at home.
+
+Dockerfiles to build [Splunk](https://splunk.com) including Enterpise, Light and Universal Forwarder - everything except Light is untouched.
 
 > Examples below show you how to pull and start Splunk Enterprise. If you want to use Splunk Light or Universal Forwarder - you just need to change tags to add `-light` or `-forwarder` and use `splunklight` and `universalforwarder` folders.
 
 ### Version
 
-* Version: `6.5.0`
-* Build: `59c8927def0f`
+* Version: `6.6.3`
+* Build: `e21ee54bc796`
 
 ## Installation
 
 Build the image locally.
 
 ```bash
-git clone https://github.com/outcoldman/docker-splunk.git
+git clone https://github.com/blacs30/docker-splunk.git
 cd docker-splunk/splunk
 docker build --tag="$USER/splunk" .
 ```
 
 ## Quick Start
 
-To manually start Splunk Enterprise container 
+To manually start Splunk Enterprise container
 
 ```bash
-docker run --hostname splunk -p 8000:8000 -d --env SPLUNK_START_ARGS="--accept-license --answer-yes --no-prompt" outcoldman/splunk:6.5.0
+docker run --hostname splunk -p 8000:8000 -d --env SPLUNK_START_ARGS="--accept-license --answer-yes --no-prompt" blacs30/splunk-light
 ```
 
 This docker image has two data volumes `/opt/splunk/etc` and `/opt/splunk/var` (See [Data Store](#data-store)). To avoid losing any data when container is stopped/deleted mount these volumes from docker volume containers (see [Managing data in containers](https://docs.docker.com/userguide/dockervolumes/))
 
 ```bash
 docker run --name vsplunk -v /opt/splunk/etc -v /opt/splunk/var busybox
-docker run --hostname splunk --name splunk --volumes-from=vsplunk -p 8000:8000 -d --env SPLUNK_START_ARGS="--accept-license --answer-yes --no-prompt" outcoldman/splunk:6.5.0
+docker run --hostname splunk --name splunk --volumes-from=vsplunk -p 8000:8000 -d --env SPLUNK_START_ARGS="--accept-license --answer-yes --no-prompt" blacs30/splunk-light
 ```
 
-Or if you use [docker-compose](https://docs.docker.com/compose/)
+Or if you use [docker-compose](https://docs.docker.com/compose/) - export from Rancher.
 
 ```
 version: '2'
 services:
-
-  splunk:
-    image: outcoldman/splunk:6.5.0
-    environment: 
-      - SPLUNK_START_ARGS=--accept-license --answer-yes --no-prompt
+  splunk-box:
+    image: blacs30/splunk-light:latest
     hostname: splunk
+    environment:
+      SPLUNK_ADD: tcp 1514
+      SPLUNK_ENABLE_LISTEN: '9997'
+      SPLUNK_START_ARGS: --accept-license --answer-yes
+      SPLUNK_USER: root
+    stdin_open: true
     volumes:
-      - config:/opt/splunk/etc
-      - data:/opt/splunk/var
+    - /var/lib/docker/containers:/host/containers:ro
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    tty: true
+    volumes_from:
+    - splunk-data
     ports:
-      - 8000:8000
-volumes:
-  config:
-    driver: local
-  data:
-    driver: local
+    - 1514:1514/tcp
+    - 9997:9997/tcp
+    - 8188:8088/tcp
+    - 8189:8089/tcp
+    labels:
+      io.rancher.sidekicks: splunk-data
+      io.rancher.container.pull_image: always
+  splunk-data:
+    image: busybox
+    stdin_open: true
+    volumes:
+    - /mnt/data/splunk/etc:/opt/splunk/etc
+    - /mnt/data/splunk/var:/opt/splunk/var
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.start_once: true
+
 ```
 
 ## Configuration
@@ -115,7 +126,7 @@ Next ports are exposed
 * `1514` - Network Input (not used by default) (All Splunk products)
 * `8088` - HTTP Event Collector
 
-> We are using `1514` instead of standard `514` syslog port because ports below 
+> We are using `1514` instead of standard `514` syslog port because ports below
 > 1024 are reserved for root access only. See [Run Splunk Enterprise as a different or non-root user](http://docs.splunk.com/Documentation/Splunk/latest/Installation/RunSplunkasadifferentornon-rootuser).
 
 ### Entrypoint
@@ -193,7 +204,7 @@ configuration files or deployment server.
     --publish 8000 \
     --env SPLUNK_ENABLE_DEPLOY_SERVER=true \
     --env SPLUNK_START_ARGS="--accept-license --answer-yes --no-prompt" \
-    outcoldman/splunk
+    blacs30/splunk-light
 > echo "Starting indexer 1"
 > docker run -d --net splunk \
     --hostname splunkindexer1 \
@@ -201,7 +212,7 @@ configuration files or deployment server.
     --publish 8000 \
     --env SPLUNK_ENABLE_LISTEN=9997 \
     --env SPLUNK_START_ARGS="--accept-license --answer-yes --no-prompt" \
-    outcoldman/splunk
+    blacs30/splunk-light
 > echo "Starging indexer 2"
 > docker run --rm --net splunk \
     --hostname splunkindexer2 \
@@ -209,7 +220,7 @@ configuration files or deployment server.
     --publish 8000 \
     --env SPLUNK_ENABLE_LISTEN=9997 \
     --env SPLUNK_START_ARGS="--accept-license --answer-yes --no-prompt" \
-    outcoldman/splunk
+    blacs30/splunk-light
 > echo "Starting forwarder, which forwards data to 2 indexers by cloning events"
 > docker run -d --net splunk \
     --name forwarder \
@@ -237,11 +248,11 @@ Upgrade example below
 # Use data volume container to persist data between upgrades
 docker run --name vsplunk -v /opt/splunk/etc -v /opt/splunk/var busybox
 # Start old version of Splunk Enterprise
-docker run --hostname splunk --name splunk --volumes-from=vsplunk -p 8000:8000 -d --env SPLUNK_START_ARGS="--accept-license --answer-yes --no-prompt" outcoldman/splunk:6.4.3
+docker run --hostname splunk --name splunk --volumes-from=vsplunk -p 8000:8000 -d --env SPLUNK_START_ARGS="--accept-license --answer-yes --no-prompt" blacs30/splunk-light:6.6.2
 # Stop Splunk Enterprise container
 docker stop splunk
 # Remove Splunk Enterprise container
 docker rm -v splunk
 # Start Splunk Enterprise container with new version
-docker run --hostname splunk --name splunk --volumes-from=vsplunk -p 8000:8000 -d --env SPLUNK_START_ARGS="--accept-license --answer-yes --no-prompt" outcoldman/splunk:6.5.0
+docker run --hostname splunk --name splunk --volumes-from=vsplunk -p 8000:8000 -d --env SPLUNK_START_ARGS="--accept-license --answer-yes --no-prompt" blacs30/splunk-light:6.6.3
 ```
