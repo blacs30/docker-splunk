@@ -1,0 +1,35 @@
+version: '2'
+services:
+  splunk-box:
+    image: blacs30/splunk-light:latest
+    hostname: splunk
+    environment:
+      SPLUNK_ADD: tcp 1514
+      SPLUNK_ENABLE_LISTEN: '9997'
+      SPLUNK_START_ARGS: --accept-license --answer-yes
+      SPLUNK_USER: root
+    stdin_open: true
+    volumes:
+    - /var/lib/docker/containers:/host/containers:ro
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    tty: true
+    volumes_from:
+    - splunk-data
+    ports:
+    - 1514:1514/tcp
+    - 9997:9997/tcp
+    - 8188:8088/tcp
+    - 8189:8089/tcp
+    labels:
+      io.rancher.sidekicks: splunk-data
+      io.rancher.container.pull_image: always
+  splunk-data:
+    image: busybox
+    stdin_open: true
+    volumes:
+    - /mnt/data/splunk/etc:/opt/splunk/etc
+    - /mnt/data/splunk/var:/opt/splunk/var
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.start_once: true
