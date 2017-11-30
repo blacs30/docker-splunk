@@ -103,7 +103,7 @@ EOF
     # Append flag to ignore file lock warning
     # Enable unsupported filesystems
     if [[ ${OPTIMISTIC_FILE_LOCKING} == "enabled" ]]; then
-        sudo echo "OPTIMISTIC_ABOUT_FILE_LOCKING = 1" >> "${SPLUNK_HOME}/etc/splunk-launch.conf"
+        echo "OPTIMISTIC_ABOUT_FILE_LOCKING = 1" >> "${SPLUNK_HOME}/etc/splunk-launch.conf"
     fi
 
     # Execute anything
