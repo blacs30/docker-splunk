@@ -103,7 +103,7 @@ EOF
     # Append flag to ignore file lock warning
     # Enable unsupported filesystems
     if [[ ${OPTIMISTIC_FILE_LOCKING} == "enabled" ]]; then
-        echo "OPTIMISTIC_ABOUT_FILE_LOCKING = 1" >> "${SPLUNK_HOME}/etc/splunk-launch.conf"
+        echo -e "\nOPTIMISTIC_ABOUT_FILE_LOCKING = 1" | tee -a "${SPLUNK_HOME}/etc/splunk-launch.conf"
     fi
 
     # Execute anything
