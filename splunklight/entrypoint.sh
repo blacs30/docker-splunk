@@ -74,14 +74,29 @@ EOF
     done
   fi
 
-  sudo -HEu ${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk start ${SPLUNK_START_ARGS}
   # Append flag to ignore file lock warning
   # Enable unsupported filesystems
   if [[ ${OPTIMISTIC_FILE_LOCKING} == "enabled" ]]; then
-    if ! grep -q 'OPTIMISTIC_ABOUT_FILE_LOCKING' "${SPLUNK_HOME}/etc/splunk-launch.conf"; then
-        echo -e "\nOPTIMISTIC_ABOUT_FILE_LOCKING = 1" >> "${SPLUNK_HOME}/etc/splunk-launch.conf.default"
-        echo -e "\nOPTIMISTIC_ABOUT_FILE_LOCKING = 1" >> "${SPLUNK_HOME}/etc/splunk-launch.conf"
-    fi
+    runList='1 2'
+    foo () {
+        local run=$1
+        if [[ "$run" == "1" ]]; then
+          sudo -HEu ${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk start ${SPLUNK_START_ARGS}
+        fi
+
+        if [[ "$run" == "2" ]]; then
+          while ! grep -qs 'OPTIMISTIC_ABOUT_FILE_LOCKING' "${SPLUNK_HOME}/etc/splunk-launch.conf"; do
+            if test -f "${SPLUNK_HOME}/etc/splunk-launch.conf"; then
+              echo -e "\nOPTIMISTIC_ABOUT_FILE_LOCKING = 1" >> "${SPLUNK_HOME}/etc/splunk-launch.conf"
+            fi
+            sleep 1
+          done
+        fi
+    }
+    for run in $runList; do foo "$run" & done
+    wait
+  else
+    sudo -HEu ${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk start ${SPLUNK_START_ARGS}
   fi
   trap "sudo -HEu ${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk stop" SIGINT SIGTERM EXIT
 
