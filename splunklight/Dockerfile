@@ -11,7 +11,6 @@ ENV SPLUNK_HOME /opt/splunk
 ENV SPLUNK_GROUP splunk
 ENV SPLUNK_USER splunk
 ENV SPLUNK_BACKUP_DEFAULT_ETC /var/opt/splunk
-ENV OPTIMISTIC_FILE_LOCKING disabled
 
 # add splunk:splunk user
 RUN groupadd -r ${SPLUNK_GROUP} \

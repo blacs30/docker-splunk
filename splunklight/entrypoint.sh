@@ -75,11 +75,6 @@ EOF
   fi
 
   sudo -HEu ${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk start ${SPLUNK_START_ARGS}
-  # Append flag to ignore file lock warning
-  # Enable unsupported filesystems
-  if [[ ${OPTIMISTIC_FILE_LOCKING} == "enabled" ]]; then
-     echo -e "\nOPTIMISTIC_ABOUT_FILE_LOCKING = 1" | tee -a "${SPLUNK_HOME}/etc/splunk-launch.conf"
-  fi
   trap "sudo -HEu ${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk stop" SIGINT SIGTERM EXIT
 
   # If this is first time we start this splunk instance
