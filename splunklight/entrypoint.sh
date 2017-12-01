@@ -88,6 +88,7 @@ EOF
           while ! grep -qs 'OPTIMISTIC_ABOUT_FILE_LOCKING' "${SPLUNK_HOME}/etc/splunk-launch.conf"; do
             if test -f "${SPLUNK_HOME}/etc/splunk-launch.conf"; then
               echo -e "\nOPTIMISTIC_ABOUT_FILE_LOCKING = 1" >> "${SPLUNK_HOME}/etc/splunk-launch.conf"
+              sudo -HEu ${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk restart ${SPLUNK_START_ARGS}
             fi
             sleep 1
           done
@@ -98,7 +99,7 @@ EOF
   else
     sudo -HEu ${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk start ${SPLUNK_START_ARGS}
   fi
-  trap "sudo -HEu ${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk stop" SIGINT SIGTERM EXIT
+  trap "sudo -HEu ${SPLUNK_USER} ${SPLUNK_HOME}/bin/splunk stop" SIGTERM EXIT
 
   # If this is first time we start this splunk instance
   if [[ $__configured == "false" ]]; then
