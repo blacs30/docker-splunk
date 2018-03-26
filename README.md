@@ -19,7 +19,7 @@
 
 Current branch:
 
-* `6.3.2`, `6.6.3`, `latest` - Splunk Light
+* `6.3.2`, `6.6.3`, `7.0.2`, `latest` - Splunk Light
 
 ## Introduction
 
