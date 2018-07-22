@@ -3,8 +3,8 @@ FROM debian:jessie
 MAINTAINER Blacs30 <github@lisowski-development.com>
 
 ENV SPLUNK_PRODUCT splunk_light
-ENV SPLUNK_VERSION 7.0.3
-ENV SPLUNK_BUILD fa31da744b51
+ENV SPLUNK_VERSION 7.1.2
+ENV SPLUNK_BUILD a0c72a66db66
 ENV SPLUNK_FILENAME splunklight-${SPLUNK_VERSION}-${SPLUNK_BUILD}-Linux-x86_64.tgz
 
 ENV SPLUNK_HOME /opt/splunk
