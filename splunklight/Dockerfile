@@ -1,10 +1,10 @@
-FROM debian:jessie
+FROM debian:stretch-slim
 
 MAINTAINER Blacs30 <github@lisowski-development.com>
 
 ENV SPLUNK_PRODUCT splunk_light
-ENV SPLUNK_VERSION 7.1.2
-ENV SPLUNK_BUILD a0c72a66db66
+ENV SPLUNK_VERSION 7.2.0
+ENV SPLUNK_BUILD 8c86330ac18
 ENV SPLUNK_FILENAME splunklight-${SPLUNK_VERSION}-${SPLUNK_BUILD}-Linux-x86_64.tgz
 
 ENV SPLUNK_HOME /opt/splunk
