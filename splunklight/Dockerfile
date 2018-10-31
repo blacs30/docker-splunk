@@ -27,7 +27,7 @@ RUN apt-get install -y libgssapi-krb5-2
 
 # Download official Splunk release, verify checksum and unzip in /opt/splunk
 # Also backup etc folder, so it will be later copied to the linked volume
-RUN apt-get install -y wget sudo \
+RUN apt-get install -y wget psutils sudo \
     && mkdir -p ${SPLUNK_HOME} \
     && wget -qO /tmp/${SPLUNK_FILENAME} https://download.splunk.com/products/${SPLUNK_PRODUCT}/releases/${SPLUNK_VERSION}/linux/${SPLUNK_FILENAME} \
     && wget -qO /tmp/${SPLUNK_FILENAME}.md5 https://download.splunk.com/products/${SPLUNK_PRODUCT}/releases/${SPLUNK_VERSION}/linux/${SPLUNK_FILENAME}.md5 \
